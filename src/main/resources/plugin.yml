@@ -1,0 +1,4 @@
+name: MinecraftDiscord
+version: '${project.version}'
+main: me.eduardanton.minecraftdiscord.MinecraftDiscord
+api-version: 1.18

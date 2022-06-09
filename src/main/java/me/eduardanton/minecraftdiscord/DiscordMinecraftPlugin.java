@@ -1,15 +1,20 @@
 package me.eduardanton.minecraftdiscord;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
 
-public abstract class DiscordMinecraftPlugin extends JavaPlugin {
+public abstract class DiscordMinecraftPlugin extends JavaPlugin implements Listener {
 
     private static DiscordBot bot;
 
@@ -18,6 +23,10 @@ public abstract class DiscordMinecraftPlugin extends JavaPlugin {
     public abstract void onLoad();
     public abstract void onUnload();
     public abstract void onDiscordMessage(MessageReceivedEvent event);
+    public abstract void onMinecraftMessage(AsyncChatEvent event);
+    public abstract void onMinecraftJoin(PlayerJoinEvent event);
+    public abstract void onMinecraftDeath(PlayerDeathEvent event);
+    public abstract void onMinecraftQuit(PlayerQuitEvent event);
 
     @Override
     public void onEnable() {
@@ -59,6 +68,9 @@ public abstract class DiscordMinecraftPlugin extends JavaPlugin {
             return;
         }
 
+        // Register the Minecraft chat event
+        getServer().getPluginManager().registerEvents(new ChatListener(this), this);
+
         // Call abstract method
         onLoad();
 
@@ -79,7 +91,7 @@ public abstract class DiscordMinecraftPlugin extends JavaPlugin {
     }
 
     /**
-     * Similar to the getConfig method from JavaPlugin, getPluginConfig creates in additional a configuration template if no initial config file was found.
+     * Similar to the getConfig method from JavaPlugin, getPluginConfig creates in addition a configuration template if no initial config file was found.
      * @return FileConfiguration : the plugin's configurations
      */
     public FileConfiguration getPluginConfig() {

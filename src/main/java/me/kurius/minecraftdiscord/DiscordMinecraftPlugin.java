@@ -1,32 +1,32 @@
-package me.eduardanton.minecraftdiscord;
+package me.kurius.minecraftdiscord;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
 
-public abstract class DiscordMinecraftPlugin extends JavaPlugin implements Listener {
+public abstract class DiscordMinecraftPlugin extends JavaPlugin {
 
     private static DiscordBot bot;
 
     // Abstract methods to implement
-    public abstract void onPreload();
+    public void onPreload() {};
     public abstract void onLoad();
     public abstract void onUnload();
     public abstract void onDiscordMessage(MessageReceivedEvent event);
     public abstract void onMinecraftMessage(AsyncChatEvent event);
-    public abstract void onMinecraftJoin(PlayerJoinEvent event);
-    public abstract void onMinecraftDeath(PlayerDeathEvent event);
-    public abstract void onMinecraftQuit(PlayerQuitEvent event);
+    public void onMinecraftJoin(PlayerJoinEvent event) {};
+    public void onMinecraftDeath(PlayerDeathEvent event) {};
+    public void onMinecraftQuit(PlayerQuitEvent event) {};
 
     @Override
     public void onEnable() {
@@ -50,12 +50,19 @@ public abstract class DiscordMinecraftPlugin extends JavaPlugin implements Liste
             // Initialize the discord bot
             bot = new DiscordBot(token);
 
+            DiscordMinecraftPlugin plugin = this;
+
             // Handle the discord message event
             getDiscordBot().addEventListener(new ListenerAdapter() {
                 @Override
                 public void onMessageReceived(MessageReceivedEvent event) {
-                    // Call abstract method
-                    onDiscordMessage(event);
+                    // Call abstract method using a BukkitRunnable to handle async events
+
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() { onDiscordMessage(event); }
+                    }.runTaskLater(plugin, 0);
+
                 }
             });
 

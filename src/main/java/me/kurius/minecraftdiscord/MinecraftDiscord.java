@@ -1,12 +1,20 @@
 package me.kurius.minecraftdiscord;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
+
+import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class MinecraftDiscord extends DiscordMinecraftPlugin {
+    MinecraftEffects effects = new MinecraftEffects();
+
+    String[] commands = {"help", "shop", "effect", "points"};
+    Map<String, Integer> userPoints = new HashMap<>();
+
+    long initialTime;
 
     @Override
     public void onPreload() {
@@ -15,7 +23,7 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
 
     @Override
     public void onLoad() {
-
+        effects.Init();
     }
 
     @Override
@@ -25,23 +33,80 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
 
     @Override
     public void onDiscordMessage(MessageReceivedEvent event) {
-
-        if (event.getAuthor().getId().equals(getDiscordBot().getSelfUser().getId())) {
+        // Message sent by bot
+        if (event.getAuthor().getId().equals(getDiscordBot().getSelfUser().getId()))
             return;
-        }
 
-        if (!event.getTextChannel().getId().equals("987939568898699295")) {
+        // Event channel
+        TextChannel channel = getDiscordBot().getTextChannelById("904198381734330378");
+
+        // Message is in another channel
+        if (!event.getTextChannel().equals(channel))
             return;
-        }
 
-        if (event.getMessage().getContentDisplay().equals("effect")) {
-            for (Player p : getServer().getOnlinePlayers()) {
+        // Message sent
+        String message = event.getMessage().getContentDisplay();
+        // First word of message is the command name
+        String command = message.split(" ")[0];
 
-                PotionEffect effect = new PotionEffect(PotionEffectType.POISON, 100, 5);
-                p.addPotionEffect(effect);
-                p.sendMessage("Applied a potion effect.");
-
+        // If the message is not in the known commands we ignore it
+        boolean isCmd = false;
+        for (String cmd: commands) {
+            if (command.equals(cmd)) {
+                isCmd = true;
+                break;
             }
+        }
+        if (!isCmd)
+            return;
+
+        String userID = event.getAuthor().getId();
+
+        // Initialize user points if not there yet
+        if (!userPoints.containsKey(userID)) {
+            userPoints.put(userID, 0);
+        }
+        int points = userPoints.get(userID);
+
+        // Effect command
+        if (command.equals("effect")) {
+            // Needs to specify "positive" or "negative"
+            if (message.split(" ").length < 2)
+                return;
+
+            // Points spent are either the 3rd parameter or defaulted to current user balance
+            int pointsSpent;
+            try {
+                if (message.split(" ").length < 3)
+                    pointsSpent = points;
+                else
+                    pointsSpent = Integer.parseInt(message.split(" ")[2]);
+            } catch (Exception e) {
+                pointsSpent = points;
+            }
+
+            // Select and apply negative effect
+            if (message.split(" ")[1].equals("negative")) {
+                effects.negativeEffect(pointsSpent);
+            }
+        }
+
+        // Points commands : Outputs current user balance
+        if (message.equals("points")) {
+            channel.sendMessage(String.format("You have %d points", userPoints.get(event.getAuthor().getId()))).queue();
+            return;
+        }
+
+        // Shop command : Displays all available effects
+        if (message.equals("shop")) {
+            String msg = "```";
+            msg += "SHOP:\nNegative Effects:\n";
+            for (int val: effects.negativeEffects.keySet()) {
+                msg += String.format("%s: %d points\n", effects.negativeEffects.get(val).getName(), val);
+            }
+            msg += "```";
+
+            channel.sendMessage(msg).queue();
         }
 
     }
@@ -51,5 +116,7 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
 //        TextChannel channel = getDiscordBot().getTextChannelById("921979218223562763");
 //        channel.sendMessage("**[MINECRAFT] " + event.getPlayer().getName() + ":** " + ((TextComponent) event.message()).content()).queue();
     }
+
+
 
 }

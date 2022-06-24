@@ -1,4 +1,4 @@
-package me.kurius.minecraftdiscord;
+package me.kurius.minecraftdiscord.plugin;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 import org.bukkit.event.EventHandler;

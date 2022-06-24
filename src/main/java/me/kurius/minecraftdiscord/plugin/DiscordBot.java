@@ -1,4 +1,4 @@
-package me.kurius.minecraftdiscord;
+package me.kurius.minecraftdiscord.plugin;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;

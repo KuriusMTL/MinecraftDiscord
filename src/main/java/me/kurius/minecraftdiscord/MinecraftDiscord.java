@@ -1,10 +1,14 @@
 package me.kurius.minecraftdiscord;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
+import jdk.internal.joptsimple.internal.Strings;
+import me.kurius.minecraftdiscord.plugin.DiscordCommand;
+import me.kurius.minecraftdiscord.plugin.DiscordMinecraftPlugin;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 
-import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,7 +22,9 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
 
     @Override
     public void onPreload() {
-
+        DiscordCommand helpCommand = new DiscordCommand("fart", "This is a fart command.")
+                .addOption("strength", OptionType.INTEGER, "Strength of the fart.", true);
+        registerDiscordCommand(helpCommand);
     }
 
     @Override
@@ -112,11 +118,16 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
     }
 
     @Override
+    public void onDiscordCommand(SlashCommandInteractionEvent event) {
+        if (event.getName().equals("fart")) {
+            event.reply("I farted " + String.valueOf(event.getOption("strength").getAsInt()) + " times.").queue();
+        }
+    }
+
+    @Override
     public void onMinecraftMessage(AsyncChatEvent event) {
 //        TextChannel channel = getDiscordBot().getTextChannelById("921979218223562763");
 //        channel.sendMessage("**[MINECRAFT] " + event.getPlayer().getName() + ":** " + ((TextComponent) event.message()).content()).queue();
     }
-
-
 
 }

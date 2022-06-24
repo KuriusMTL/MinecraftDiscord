@@ -1,22 +1,27 @@
-package me.kurius.minecraftdiscord;
+package me.kurius.minecraftdiscord.plugin;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public abstract class DiscordMinecraftPlugin extends JavaPlugin {
 
     private static DiscordBot bot;
+    private static ArrayList<DiscordCommand> commands = new ArrayList<DiscordCommand>();
 
     // Abstract methods to implement
     public void onPreload() {};
@@ -27,6 +32,7 @@ public abstract class DiscordMinecraftPlugin extends JavaPlugin {
     public void onMinecraftJoin(PlayerJoinEvent event) {};
     public void onMinecraftDeath(PlayerDeathEvent event) {};
     public void onMinecraftQuit(PlayerQuitEvent event) {};
+    public void onDiscordCommand(SlashCommandInteractionEvent event) {};
 
     @Override
     public void onEnable() {
@@ -50,6 +56,18 @@ public abstract class DiscordMinecraftPlugin extends JavaPlugin {
             // Initialize the discord bot
             bot = new DiscordBot(token);
 
+            // Register commands to the discord bot
+            for (DiscordCommand command : commands) {
+                CommandCreateAction newCommand = getDiscordBot().upsertCommand(command.getName(), command.getDescription());
+                for (DiscordCommandOption commandOption : command.getOptions()) {
+                    newCommand.addOption(commandOption.getType(), commandOption.getName(), commandOption.getDescription(), commandOption.isRequired());
+                }
+                newCommand.queue();
+            }
+
+            // Clear all commands because memory is important :)
+            commands.clear();
+
             DiscordMinecraftPlugin plugin = this;
 
             // Handle the discord message event
@@ -61,6 +79,15 @@ public abstract class DiscordMinecraftPlugin extends JavaPlugin {
                     new BukkitRunnable() {
                         @Override
                         public void run() { onDiscordMessage(event); }
+                    }.runTaskLater(plugin, 0);
+
+                }
+
+                @Override
+                public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() { onDiscordCommand(event); }
                     }.runTaskLater(plugin, 0);
 
                 }
@@ -95,6 +122,15 @@ public abstract class DiscordMinecraftPlugin extends JavaPlugin {
      */
     public JDA getDiscordBot() {
         return bot.getJDA();
+    }
+
+    /**
+     * Register a new Discord slash command to the bot.
+     * NOTE: This method only takes effect when called in the onPreload() method.
+     * @param command : The command to add to the Discord bot.
+     */
+    public void registerDiscordCommand(DiscordCommand command) {
+        commands.add(command);
     }
 
     /**

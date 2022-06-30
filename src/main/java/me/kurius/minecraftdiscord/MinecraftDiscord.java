@@ -54,7 +54,9 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
     @Override
     public void onDiscordCommand(SlashCommandInteractionEvent event) {
         if (!userPoints.containsKey(event.getUser().getId()))
-            userPoints.put(event.getUser().getId(), 0);
+            userPoints.put(event.getUser().getId(), 100);
+
+        getLogger().info(event.getName());
 
         switch (event.getName()) {
             case "help":

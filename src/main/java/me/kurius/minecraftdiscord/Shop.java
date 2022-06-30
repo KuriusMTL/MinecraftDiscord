@@ -49,13 +49,13 @@ public class Shop {
         negativeShopTree.add(75, new MinecraftMobEventEffect(EntityType.RAVAGER));
         negativeShopTree.add(80, new MinecraftMobEventEffect(EntityType.WARDEN));
 
-//        othersMaps.put(16, "teleport");
-//        othersMaps.put(17, "cobweb");
-//        othersMaps.put(18, "fire");
-//        othersMaps.put(19, "removeEnchant");
-//        othersMaps.put(20, "deleteRandom");
-//        othersMaps.put(21, "deleteArmor");
-//        othersMaps.put(22, "deleteHeld");
+        negativeShopTree.add(30, new MinecraftOtherEventEffect("teleport"));
+        negativeShopTree.add(40, new MinecraftOtherEventEffect("cobweb"));
+        negativeShopTree.add(50, new MinecraftOtherEventEffect("fire"));
+        negativeShopTree.add(70, new MinecraftOtherEventEffect("removeEnchant"));
+        negativeShopTree.add(75, new MinecraftOtherEventEffect("deleteRandom"));
+        negativeShopTree.add(80, new MinecraftOtherEventEffect("deleteArmor"));
+        negativeShopTree.add(90, new MinecraftOtherEventEffect("deleteHeld"));
 
         // Positive items
         positiveShopTree = new ShopTree<MinecraftEventEffect>();
@@ -78,9 +78,9 @@ public class Shop {
         positiveShopTree.add(25, new MinecraftMobEventEffect(EntityType.MUSHROOM_COW));
         positiveShopTree.add(50, new MinecraftMobEventEffect(EntityType.VILLAGER));
 
-//        othersMaps.put(39, "killMobs");
-//        othersMaps.put(40, "giveItem");
-//        othersMaps.put(41, "enchantArmor");
+        positiveShopTree.add(40, new MinecraftOtherEventEffect("killMobs"));
+        positiveShopTree.add(50, new MinecraftOtherEventEffect("giveItem"));
+        positiveShopTree.add(90, new MinecraftOtherEventEffect("enchantArmor"));
     }
 
     public int buyItem(int points, boolean positive, Player player) {
@@ -95,11 +95,8 @@ public class Shop {
         // Check if the user can afford anything
         if (affordableEvents.size() == 0) return 0;
 
-        System.out.println(String.valueOf(affordableEvents.size()));
-
         // Randomly pick an effect
         int choice = new Random().nextInt(affordableEvents.size());
-        System.out.println(String.valueOf(choice));
         MinecraftEventEffect event = affordableEvents.get(choice);
         event.runEffect(player);
 

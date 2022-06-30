@@ -29,11 +29,17 @@ public class ShopTreeNode <T> {
 
     public void add(int price, ShopTreeNode<T> item) {
         if (price <= this.price) {
-            if (left != null) left.add(price, item);
-            left = item;
+            if (left != null) {
+                left.add(price, item);
+            } else {
+                left = item;
+            }
         } else {
-            if (right != null) right.add(price, item);
-            right = item;
+            if (right != null) {
+                right.add(price, item);
+            } else {
+                right = item;
+            }
         }
     }
 }

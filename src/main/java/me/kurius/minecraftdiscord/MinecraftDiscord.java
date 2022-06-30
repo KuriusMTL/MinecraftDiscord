@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.bukkit.entity.Player;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,8 +57,6 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
         if (!userPoints.containsKey(event.getUser().getId()))
             userPoints.put(event.getUser().getId(), 100);
 
-        getLogger().info(event.getName());
-
         switch (event.getName()) {
             case "help":
                 event.reply("help message").queue();
@@ -74,18 +73,35 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
                     pointsSpent = userPoints.get(event.getUser().getId());
                 }
 
+                if (pointsSpent <= 0) {
+                    event.reply("You do not have any points").queue();
+                    break;
+                }
+
                 boolean positive = event.getOption("effect").getAsString().equalsIgnoreCase("positive");
                 int currentPoints = userPoints.get(event.getUser().getId());
                 // Get random player in whitelist
                 int randPlayer = new Random().nextInt(activePlayers.size());
                 Player player = activePlayers.get(randPlayer);
                 userPoints.put(event.getUser().getId(), currentPoints - shop.buyItem(pointsSpent, positive, player));
+                int spentPoints = currentPoints - userPoints.get(event.getUser().getId());
+
+                String message = (positive ? Color.GREEN : Color.RED) + String.format("%s spent %d points to %s %s",
+                        event.getUser().getName(), spentPoints,  positive ? "help" : "harm", player.getName());
+
+                for (Player p: getServer().getOnlinePlayers()) {
+                    p.sendMessage(message);
+                }
+
+                event.reply(String.format("You spent %d points", spentPoints)).queue();
+
                 break;
         }
     }
 
     @Override
     public void onMinecraftMessage(AsyncChatEvent event) {
+        activePlayers.add(event.getPlayer());
 //        TextChannel channel = getDiscordBot().getTextChannelById("921979218223562763");
 //        channel.sendMessage("**[MINECRAFT] " + event.getPlayer().getName() + ":** " + ((TextComponent) event.message()).content()).queue();
     }

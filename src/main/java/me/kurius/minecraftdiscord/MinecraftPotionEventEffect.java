@@ -41,8 +41,9 @@ public class MinecraftPotionEventEffect extends MinecraftEventEffect {
         return amplifier;
     }
 
-    public void runEffect(Player player) {
+    public String runEffect(Player player) {
         PotionEffect potionEffect = new PotionEffect(effect, duration, amplifier);
         player.addPotionEffect(potionEffect);
+        return String.format(" gave %s to ", effect.getName());
     }
 }

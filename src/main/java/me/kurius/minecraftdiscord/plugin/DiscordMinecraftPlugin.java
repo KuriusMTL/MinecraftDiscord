@@ -4,6 +4,7 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -21,24 +22,24 @@ import java.util.ArrayList;
 public abstract class DiscordMinecraftPlugin extends JavaPlugin {
 
     private static DiscordBot bot;
-    private static ArrayList<DiscordCommand> commands = new ArrayList<DiscordCommand>();
+    private static ArrayList<DiscordCommand> commands = new ArrayList<>();
 
     // Abstract methods to implement
-    public void onPreload() {};
-    public abstract void onLoad();
-    public abstract void onUnload();
+    public void onPluginPreload() {}
+    public abstract void onPluginLoad();
+    public abstract void onPluginUnload();
     public abstract void onDiscordMessage(MessageReceivedEvent event);
     public abstract void onMinecraftMessage(AsyncChatEvent event);
-    public void onMinecraftJoin(PlayerJoinEvent event) {};
-    public void onMinecraftDeath(PlayerDeathEvent event) {};
-    public void onMinecraftQuit(PlayerQuitEvent event) {};
-    public void onDiscordCommand(SlashCommandInteractionEvent event) {};
+    public void onMinecraftJoin(PlayerJoinEvent event) {}
+    public void onMinecraftDeath(PlayerDeathEvent event) {}
+    public void onMinecraftQuit(PlayerQuitEvent event) {}
+    public void onDiscordCommand(SlashCommandInteractionEvent event) {}
+    public void onDiscordReaction(MessageReactionAddEvent event) {}
 
     @Override
     public void onEnable() {
-
         // Call abstract method
-        onPreload();
+        onPluginPreload();
 
         try {
             // Get the discord credentials from the config file.
@@ -91,6 +92,16 @@ public abstract class DiscordMinecraftPlugin extends JavaPlugin {
                     }.runTaskLater(plugin, 0);
 
                 }
+
+                @Override
+                public void onMessageReactionAdd(@NotNull MessageReactionAddEvent event) {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            onDiscordReaction(event);
+                        }
+                    }.runTaskLater(plugin, 0);
+                }
             });
 
             getLogger().info("Discord bot is online.");
@@ -106,14 +117,14 @@ public abstract class DiscordMinecraftPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
 
         // Call abstract method
-        onLoad();
+        onPluginLoad();
 
     }
 
     @Override
     public void onDisable() {
         getLogger().info("Wumpus from Discord will miss you. Bye.");
-        onUnload();
+        onPluginUnload();
     }
 
     /**

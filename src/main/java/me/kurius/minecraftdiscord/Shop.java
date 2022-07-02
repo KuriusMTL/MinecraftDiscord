@@ -79,28 +79,27 @@ public class Shop {
         positiveShopTree.add(50, new MinecraftMobEventEffect(EntityType.VILLAGER));
 
         positiveShopTree.add(40, new MinecraftOtherEventEffect("killMobs"));
-        positiveShopTree.add(50, new MinecraftOtherEventEffect("giveItem"));
+        positiveShopTree.add(10, new MinecraftOtherEventEffect("giveItem"));
         positiveShopTree.add(90, new MinecraftOtherEventEffect("enchantArmor"));
     }
 
-    public int buyItem(int points, boolean positive, Player player) {
+    public BoughtItem buyItem(int points, boolean positive, Player player) {
 
         // Nobody in the server
-        if (!getServer().getOnlinePlayers().iterator().hasNext()) return 0;
+        if (!getServer().getOnlinePlayers().iterator().hasNext()) return new BoughtItem("Get friends", 0);
 
         ShopTree<MinecraftEventEffect> shop = positive ? positiveShopTree : negativeShopTree;
 
         ArrayList<MinecraftEventEffect> affordableEvents = shop.getUnder(points);
 
         // Check if the user can afford anything
-        if (affordableEvents.size() == 0) return 0;
+        if (affordableEvents.size() == 0) return new BoughtItem("You're poor", 0);
 
         // Randomly pick an effect
         int choice = new Random().nextInt(affordableEvents.size());
         MinecraftEventEffect event = affordableEvents.get(choice);
-        event.runEffect(player);
 
-        return event.getPrice();
+        return new BoughtItem(event.runEffect(player), event.getPrice());
 
 //        ArrayList<Integer> shopItems = positive ? positiveShopItems : negativeShopItems;
 //        int offset = positive ? negativeShopItems.size(): 0;

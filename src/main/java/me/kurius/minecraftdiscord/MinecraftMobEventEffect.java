@@ -22,9 +22,10 @@ public class MinecraftMobEventEffect extends MinecraftEventEffect {
         return entity;
     }
 
-    public void runEffect(Player player) {
+    public String runEffect(Player player) {
         // Get player location and spawn entity there
         Location loc = player.getLocation();
         player.getWorld().spawnEntity(loc, entity);
+        return String.format(" spawned a %s on ", entity.name());
     }
 }

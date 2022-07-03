@@ -1,11 +1,15 @@
 package me.kurius.minecraftdiscord.plugin;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.jetbrains.annotations.NotNull;
 
 public class ChatListener implements Listener {
 
@@ -30,8 +34,14 @@ public class ChatListener implements Listener {
         this.plugin.onMinecraftDeath(event);
     }
 
-    @EventHandler void onPlayerQuit(PlayerQuitEvent event) {
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
         this.plugin.onMinecraftQuit(event);
     }
 
+//    @Override
+//    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
+//
+//        return false;
+//    }
 }

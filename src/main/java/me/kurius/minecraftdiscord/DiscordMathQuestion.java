@@ -1,5 +1,8 @@
 package me.kurius.minecraftdiscord;
 
+import net.dv8tion.jda.api.EmbedBuilder;
+
+import java.awt.*;
 import java.util.Random;
 
 public class DiscordMathQuestion extends DiscordChallenge {
@@ -8,7 +11,13 @@ public class DiscordMathQuestion extends DiscordChallenge {
 
     public DiscordMathQuestion() {
         answer = String.valueOf(n1 + n2);
-        channel.sendMessage(String.format("What's %d + %d?", n1, n2)).queue((message) -> messageID = message.getId());
+
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Answer to get points", null);
+        eb.setColor(Color.green);
+        eb.setDescription(String.format("What's %d + %d?", n1, n2));
+
+        channel.sendMessageEmbeds(eb.build()).queue((message) -> messageID = message.getId());
         multiplier = 1.5f;
     }
 

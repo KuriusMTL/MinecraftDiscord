@@ -6,6 +6,8 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.Command;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -57,11 +59,16 @@ public abstract class DiscordMinecraftPlugin extends JavaPlugin {
             // Initialize the discord bot
             bot = new DiscordBot(token);
 
+            // Clear all Discord commands
+            getDiscordBot().updateCommands().queue();
+
             // Register commands to the discord bot
             for (DiscordCommand command : commands) {
                 CommandCreateAction newCommand = getDiscordBot().upsertCommand(command.getName(), command.getDescription());
                 for (DiscordCommandOption commandOption : command.getOptions()) {
-                    newCommand.addOption(commandOption.getType(), commandOption.getName(), commandOption.getDescription(), commandOption.isRequired());
+                    OptionData option = new OptionData(commandOption.getType(), commandOption.getName(), commandOption.getDescription(), commandOption.isRequired());
+                    option.addChoices(commandOption.getChoices());
+                    newCommand.addOptions(option);
                 }
                 newCommand.queue();
             }
@@ -108,6 +115,7 @@ public abstract class DiscordMinecraftPlugin extends JavaPlugin {
         } catch (Exception e) {
 
             // Discord login error
+            getLogger().severe(e.getMessage());
             getLogger().severe("Could not connect to the Discord bot.");
             this.setEnabled(false);
             return;
@@ -157,6 +165,9 @@ public abstract class DiscordMinecraftPlugin extends JavaPlugin {
             // Make sure to set a template variable for DISCORD_TOKEN.
             try {
                 getConfig().set("DISCORD_TOKEN", "insert token here");
+                getConfig().set("FOCUS_SERVER", "insert server id here");
+                getConfig().set("FOCUS_CHANNEL", "insert server channel id here");
+                getConfig().set("PLAYERS", new String[]{"Steve", "Alex"});
                 getConfig().save(configFile);
                 getLogger().info(String.format("Created a config.yml in %s for %s.", getDataFolder(), getName()));
                 getLogger().info("Make sure to configure the DISCORD_TOKEN in the config.yml and then restart the server to apply the changes.");

@@ -1,5 +1,6 @@
 package me.kurius.minecraftdiscord.plugin;
 
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 
 import java.util.ArrayList;
@@ -17,6 +18,11 @@ public class DiscordCommand {
 
     public DiscordCommand addOption(String name, OptionType type, String description, boolean required) {
         options.add(new DiscordCommandOption(name, type, description, required));
+        return this;
+    }
+
+    public DiscordCommand addOption(String name, OptionType type, String description, boolean required, Command.Choice[] choices) {
+        options.add(new DiscordCommandOption(name, type, description, required, choices));
         return this;
     }
 

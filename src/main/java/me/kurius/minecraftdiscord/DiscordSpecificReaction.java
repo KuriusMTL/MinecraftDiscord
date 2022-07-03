@@ -1,5 +1,8 @@
 package me.kurius.minecraftdiscord;
 
+import net.dv8tion.jda.api.EmbedBuilder;
+
+import java.awt.*;
 import java.util.Random;
 
 public class DiscordSpecificReaction extends DiscordChallenge {
@@ -11,8 +14,13 @@ public class DiscordSpecificReaction extends DiscordChallenge {
 
     public DiscordSpecificReaction() {
         emoji = emojis[new Random().nextInt(emojis.length)];
-        channel.sendMessage(String.format("React to this message with %s!", emoji))
-                .queue((message) -> messageID = message.getId());
+
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Answer to get points", null);
+        eb.setColor(Color.blue);
+        eb.setDescription(String.format("React to this message with %s!", emoji));
+
+        channel.sendMessageEmbeds(eb.build()).queue((message) -> messageID = message.getId());
         multiplier = 1;
     }
 

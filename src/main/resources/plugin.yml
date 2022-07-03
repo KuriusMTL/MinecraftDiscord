@@ -2,3 +2,7 @@ name: MinecraftDiscord
 version: '${project.version}'
 main: me.kurius.minecraftdiscord.MinecraftDiscord
 api-version: 1.18
+commands:
+  crowdcontrol:
+    description: Start or end Discord crowdcontrol
+    usage: /<command> [start|stop]

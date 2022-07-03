@@ -18,19 +18,11 @@ public class DiscordBot {
      */
     public DiscordBot(@NotNull String TOKEN) throws Exception {
 
-        try {
+        bot = JDABuilder.createDefault(TOKEN)
+                .setActivity(Activity.playing("Minecraft")) // The bot will be playing "Minecraft" as its status
+                .build();
 
-            bot = JDABuilder.createDefault(TOKEN)
-                    .setActivity(Activity.playing("Minecraft")) // The bot will be playing "Minecraft" as its status
-                    .build();
-
-            bot.awaitReady();
-
-        } catch (LoginException e) {
-            throw new Exception();
-        } catch (InterruptedException e) {
-            throw new Exception();
-        }
+        bot.awaitReady();
 
     }
 

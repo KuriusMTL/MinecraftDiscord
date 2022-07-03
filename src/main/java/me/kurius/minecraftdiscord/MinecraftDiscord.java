@@ -7,16 +7,15 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public final class MinecraftDiscord extends DiscordMinecraftPlugin {
     Shop shop = new Shop();
@@ -29,48 +28,55 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
 
     TextChannel focusChannel;
 
+    Timer challengeTimer = new Timer();
+
     @Override
     public void onPluginPreload() {
-        DiscordCommand helpCommand = new DiscordCommand("help", "Displays help message.");
+
+        // Initialize the Discord slash commands
+
+        // Help command provides a basic help message to the user
+        DiscordCommand helpCommand = new DiscordCommand("help", "Displays a help message.");
         registerDiscordCommand(helpCommand);
 
+        // Points command returns the amount of points available for the user who invoked this command
         DiscordCommand pointsCommand = new DiscordCommand("points", "Get current points.");
         registerDiscordCommand(pointsCommand);
 
+        // Buy command allows the user to spend points on game effects
+        // It is required to specify the effect (either positive or negative)
+        // and the amount of points to gamble. The greater the points, the greater the in game effect
         DiscordCommand buyCommand = new DiscordCommand("buy", "Displays shop.")
-                .addOption("effect", OptionType.STRING, "Positive/Negative", true)
-                .addOption("points", OptionType.INTEGER, "Points to spend (default: all)", false);
+                .addOption("effect", OptionType.STRING, "Positive/Negative effect", true, new Command.Choice[]{
+                        new Command.Choice("Positive", "Positive"),
+                        new Command.Choice("Negative", "Negative")
+                }).addOption("points", OptionType.INTEGER, "Points to spend (default: all)", false);
         registerDiscordCommand(buyCommand);
 
+        // Initialize Minecraft commands
+        this.getCommand("crowdcontrol").setExecutor(new CommandCrowdControl(this));
+
+        // Initialize the shop list
         shop.Init();
     }
 
     @Override
     public void onPluginLoad() {
-        focusChannel = getDiscordBot().getGuildById("692133317520261120").getTextChannelById("904198381734330378");
-        DiscordChallenge.channel = focusChannel;
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                int pick = new Random().nextInt(3);
-                switch (pick) {
-                    case 0:
-                        challenges.add(new DiscordAnyReaction());
-                        return;
-                    case 1:
-                        challenges.add(new DiscordSpecificReaction());
-                        return;
-                    case 2:
-                        challenges.add(new DiscordMathQuestion());
-                        return;
-                }
-            }
-        }.runTaskTimer(this, 20, 200);
+
+        // Get the focus channel to send messages
+        try {
+            focusChannel = getDiscordBot().getGuildById(getConfig().getString("FOCUS_SERVER")).getTextChannelById(getConfig().getString("FOCUS_CHANNEL"));
+            DiscordChallenge.channel = focusChannel;
+        } catch (Exception e) {
+            getLogger().severe(e.getMessage());
+            getLogger().severe(String.format("config.yml for %s appears to be corrupted. Please remove the file and restart the plugin.", getName()));
+        }
+
     }
 
     @Override
     public void onPluginUnload() {
-
+        // Nothing to implement
     }
 
     @Override
@@ -89,6 +95,11 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
                 break;
             }
         }
+    }
+
+    @Override
+    public void onMinecraftMessage(AsyncChatEvent event) {
+        // Nothing to implement
     }
 
     @Override
@@ -115,6 +126,11 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
                 if (pointsSpent <= 0) {
                     event.reply("You do not have any points").queue();
                     break;
+                }
+
+                if (activePlayers.size() == 0) {
+                    event.reply("No players are connected to the server yet.").queue();
+                    return;
                 }
 
                 boolean positive = event.getOption("effect").getAsString().equalsIgnoreCase("positive");
@@ -167,9 +183,64 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
     }
 
     @Override
-    public void onMinecraftMessage(AsyncChatEvent event) {
-        activePlayers.add(event.getPlayer());
-//        TextChannel channel = getDiscordBot().getTextChannelById("921979218223562763");
-//        channel.sendMessage("**[MINECRAFT] " + event.getPlayer().getName() + ":** " + ((TextComponent) event.message()).content()).queue();
+    public void onMinecraftJoin(PlayerJoinEvent event) {
+        // Get the player name that just joined the game
+        String playerName = event.getPlayer().getName();
+
+        // Determine if the player is on the whitelist from the configs
+        // If so, add them to the activePlayers list
+        try {
+            for (String name : (ArrayList<String>) getConfig().get("PLAYERS")) {
+                if (name.equals(playerName)) {
+                    activePlayers.add(event.getPlayer());
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            getLogger().severe(e.getMessage());
+            getLogger().severe(String.format("config.yml for %s appears to be corrupted. Please remove the file and restart the plugin.", getName()));
+        }
+
     }
+
+    @Override
+    public void onMinecraftQuit(PlayerQuitEvent event) {
+        // Get the player name that just joined the game
+        String playerName = event.getPlayer().getName();
+
+        // Determine if the player is on the activePlayers list
+        // If so, remove them from that list
+        for (Player player : activePlayers) {
+            if (player.getName().equals(playerName)) {
+                activePlayers.remove(player);
+                break;
+            }
+        }
+    }
+
+    public void startCrowdcontrol() {
+        challengeTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                int pick = new Random().nextInt(3);
+                switch (pick) {
+                    case 0:
+                        challenges.add(new DiscordAnyReaction());
+                        return;
+                    case 1:
+                        challenges.add(new DiscordSpecificReaction());
+                        return;
+                    case 2:
+                        challenges.add(new DiscordMathQuestion());
+                        return;
+                }
+            }
+        }, 1000, 10000);
+    }
+
+    public void stopCrowdcontrol() {
+        challengeTimer.cancel();
+    }
+
 }
+

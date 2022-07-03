@@ -1,8 +1,19 @@
 package me.kurius.minecraftdiscord;
 
+import net.dv8tion.jda.api.EmbedBuilder;
+
+import java.awt.*;
+
 public class DiscordAnyReaction extends DiscordChallenge {
     public DiscordAnyReaction() {
-        channel.sendMessage("React to this message!").queue((message) -> messageID = message.getId());
+
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Answer to get points", null);
+        eb.setColor(Color.red);
+        eb.setDescription("React with an emoji to this message!");
+
+        channel.sendMessageEmbeds(eb.build()).queue((message) -> messageID = message.getId());
+
         multiplier = 0.5f;
     }
 

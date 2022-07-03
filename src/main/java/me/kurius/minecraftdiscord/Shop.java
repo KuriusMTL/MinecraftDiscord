@@ -50,12 +50,16 @@ public class Shop {
         negativeShopTree.add(80, new MinecraftMobEventEffect(EntityType.WARDEN));
 
         negativeShopTree.add(30, new MinecraftOtherEventEffect("teleport"));
+        negativeShopTree.add(30, new MinecraftOtherEventEffect("spawnWater"));
         negativeShopTree.add(40, new MinecraftOtherEventEffect("cobweb"));
+        negativeShopTree.add(50, new MinecraftOtherEventEffect("setNight"));
         negativeShopTree.add(50, new MinecraftOtherEventEffect("fire"));
         negativeShopTree.add(70, new MinecraftOtherEventEffect("removeEnchant"));
         negativeShopTree.add(75, new MinecraftOtherEventEffect("deleteRandom"));
         negativeShopTree.add(80, new MinecraftOtherEventEffect("deleteArmor"));
+        negativeShopTree.add(85, new MinecraftOtherEventEffect("spawnTNT"));
         negativeShopTree.add(90, new MinecraftOtherEventEffect("deleteHeld"));
+        negativeShopTree.add(120, new MinecraftOtherEventEffect("spawnLava"));
 
         // Positive items
         positiveShopTree = new ShopTree<MinecraftEventEffect>();
@@ -74,13 +78,22 @@ public class Shop {
         positiveShopTree.add(10, new MinecraftMobEventEffect(EntityType.COW));
         positiveShopTree.add(15, new MinecraftMobEventEffect(EntityType.SHEEP));
         positiveShopTree.add(10, new MinecraftMobEventEffect(EntityType.PIG));
+        positiveShopTree.add(10, new MinecraftMobEventEffect(EntityType.OCELOT));
         positiveShopTree.add(5, new MinecraftMobEventEffect(EntityType.CHICKEN));
-        positiveShopTree.add(25, new MinecraftMobEventEffect(EntityType.MUSHROOM_COW));
+        positiveShopTree.add(30, new MinecraftMobEventEffect(EntityType.HORSE));
+        positiveShopTree.add(40, new MinecraftMobEventEffect(EntityType.WOLF));
+        positiveShopTree.add(40, new MinecraftMobEventEffect(EntityType.MUSHROOM_COW));
         positiveShopTree.add(50, new MinecraftMobEventEffect(EntityType.VILLAGER));
+        positiveShopTree.add(60, new MinecraftMobEventEffect(EntityType.IRON_GOLEM));
 
         positiveShopTree.add(40, new MinecraftOtherEventEffect("killMobs"));
+        positiveShopTree.add(40, new MinecraftOtherEventEffect("setDay"));
+        positiveShopTree.add(50, new MinecraftOtherEventEffect("ironBlock"));
+        positiveShopTree.add(90, new MinecraftOtherEventEffect("emeraldBlock"));
+        positiveShopTree.add(100, new MinecraftOtherEventEffect("diamondBlock"));
         positiveShopTree.add(10, new MinecraftOtherEventEffect("giveItem"));
         positiveShopTree.add(90, new MinecraftOtherEventEffect("enchantArmor"));
+        positiveShopTree.add(90, new MinecraftOtherEventEffect("findVillage"));
     }
 
     public BoughtItem buyItem(int points, boolean positive, Player player) {

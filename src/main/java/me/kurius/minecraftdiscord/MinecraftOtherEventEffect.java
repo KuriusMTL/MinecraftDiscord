@@ -1,15 +1,26 @@
 package me.kurius.minecraftdiscord;
 
-import org.bukkit.Location;
-import org.bukkit.Material;
+import net.kyori.adventure.text.Component;
+import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Mob;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.loot.LootTable;
+import org.bukkit.material.MaterialData;
+import org.bukkit.metadata.MetadataValue;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 public class MinecraftOtherEventEffect extends MinecraftEventEffect {
     private String effect;
@@ -104,6 +115,33 @@ public class MinecraftOtherEventEffect extends MinecraftEventEffect {
                     armorsEnchant[i].addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 3);
                 }
                 return " enchanted the armor of ";
+            case "spawnWater":
+                loc.getBlock().setType(Material.WATER);
+                return " poured water on ";
+            case "spawnLava":
+                loc.getBlock().setType(Material.LAVA);
+                return " poured lava on ";
+            case "spawnTNT":
+                player.getWorld().spawnEntity(loc, EntityType.PRIMED_TNT);
+                return " blew up ";
+            case "ironBlock":
+                loc.getBlock().setType(Material.IRON_BLOCK);
+                return " gave an iron block to ";
+            case "diamondBlock":
+                loc.getBlock().setType(Material.DIAMOND_BLOCK);
+                return " gave a diamond block to ";
+            case "emeraldBlock":
+                loc.getBlock().setType(Material.EMERALD_BLOCK);
+                return " gave an emerald block to ";
+            case "setDay":
+                player.setPlayerTime(1000, true);
+                return " set the time to day for ";
+            case "setNight":
+                player.setPlayerTime(13000, true);
+                return " set the time to night for ";
+            case "findVillage":
+                Location village = player.getWorld().locateNearestStructure(loc, StructureType.VILLAGE, 100, true);
+                return String.format(" found an unexplored village at x=%d z=%d nearest to ", village.getBlockX(), village.getBlockZ());
         }
         return "";
     }

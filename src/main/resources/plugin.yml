@@ -4,5 +4,8 @@ main: me.kurius.minecraftdiscord.MinecraftDiscord
 api-version: 1.18
 commands:
   crowdcontrol:
-    description: Start or end Discord crowdcontrol
+    description: Start or end Discord crowdcontrol.
     usage: /<command> [start|stop]
+  multiplier:
+    description: Change rate paramaters for Discord crowdcontrol.
+    usage: /<command> [time|points] <value>

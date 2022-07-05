@@ -3,6 +3,7 @@ package me.kurius.minecraftdiscord;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import me.kurius.minecraftdiscord.plugin.DiscordCommand;
 import me.kurius.minecraftdiscord.plugin.DiscordMinecraftPlugin;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -13,8 +14,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 
+import java.awt.*;
 import java.util.*;
 
 public final class MinecraftDiscord extends DiscordMinecraftPlugin {
@@ -30,7 +31,8 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
 
     Timer challengeTimer = new Timer();
 
-    int pointsMultiplier = 1;
+    float pointsMultiplier = 1f;
+    float timeMultiplier = 1f;
 
     @Override
     public void onPluginPreload() {
@@ -57,7 +59,7 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
 
         // Initialize Minecraft commands
         this.getCommand("crowdcontrol").setExecutor(new CommandCrowdControl(this));
-        this.getCommand("pointsmultiplier").setExecutor(new CommandPointsMultiplier(this));
+        this.getCommand("multiplier").setExecutor(new CommandEffectsMultiplier(this));
 
         // Initialize the shop list
         shop.Init();
@@ -90,7 +92,7 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
 
         for (DiscordChallenge challenge: challenges) {
             if (challenge.onMessage(event.getMessage().getContentDisplay())) {
-                int points = (int) (1000 * challenge.multiplier / Math.sqrt(challenge.solveTime())) * pointsMultiplier;
+                int points = (int) (1000 * challenge.multiplier / Math.sqrt(challenge.solveTime()) * pointsMultiplier);
                 userPoints.put(event.getAuthor().getId(), currentPoints + points);
                 challenges.remove(challenge);
                 event.getChannel().sendMessage(String.format("%s got %d points", event.getAuthor().getName(), points));
@@ -144,7 +146,7 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
                 BoughtItem boughtItem = shop.buyItem(pointsSpent, positive, player);
 
                 if (boughtItem.getPrice() == 0) {
-                    event.reply(boughtItem.getMessage());
+                    event.reply("You do not have enough points to buy anything.");
                     break;
                 }
 
@@ -174,7 +176,7 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
         for (DiscordChallenge challenge: challenges) {
             if (event.getMessageId().equals(challenge.messageID)) {
                 if (challenge.onReact(event.getReaction().getReactionEmote().getEmoji())) {
-                    int points = (int) (1000 * challenge.multiplier / Math.sqrt(challenge.solveTime())) * pointsMultiplier;
+                    int points = (int) (1000 * challenge.multiplier / Math.sqrt(challenge.solveTime()) * pointsMultiplier);
                     userPoints.put(event.getUserId(), currentPoints + points);
                     focusChannel.deleteMessageById(challenge.messageID).queue();
                     challenges.remove(challenge);
@@ -238,11 +240,12 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
                         return;
                 }
             }
-        }, 1000, 10000);
+        }, 1000, (long) (10000 * timeMultiplier));
     }
 
     public void stopCrowdcontrol() {
         challengeTimer.cancel();
+        challengeTimer = new Timer();
     }
 
 }

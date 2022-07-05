@@ -30,6 +30,8 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
 
     Timer challengeTimer = new Timer();
 
+    int pointsMultiplier = 1;
+
     @Override
     public void onPluginPreload() {
 
@@ -55,6 +57,7 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
 
         // Initialize Minecraft commands
         this.getCommand("crowdcontrol").setExecutor(new CommandCrowdControl(this));
+        this.getCommand("pointsmultiplier").setExecutor(new CommandPointsMultiplier(this));
 
         // Initialize the shop list
         shop.Init();
@@ -87,7 +90,7 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
 
         for (DiscordChallenge challenge: challenges) {
             if (challenge.onMessage(event.getMessage().getContentDisplay())) {
-                int points = (int) (1000 / Math.sqrt(challenge.solveTime()));
+                int points = (int) (1000 * challenge.multiplier / Math.sqrt(challenge.solveTime())) * pointsMultiplier;
                 userPoints.put(event.getAuthor().getId(), currentPoints + points);
                 challenges.remove(challenge);
                 event.getChannel().sendMessage(String.format("%s got %d points", event.getAuthor().getName(), points));
@@ -171,7 +174,7 @@ public final class MinecraftDiscord extends DiscordMinecraftPlugin {
         for (DiscordChallenge challenge: challenges) {
             if (event.getMessageId().equals(challenge.messageID)) {
                 if (challenge.onReact(event.getReaction().getReactionEmote().getEmoji())) {
-                    int points = (int) challenge.solveTime() / 100;
+                    int points = (int) (1000 * challenge.multiplier / Math.sqrt(challenge.solveTime())) * pointsMultiplier;
                     userPoints.put(event.getUserId(), currentPoints + points);
                     focusChannel.deleteMessageById(challenge.messageID).queue();
                     challenges.remove(challenge);
